@@ -1,0 +1,197 @@
+page {
+  background: #f5f6f8;
+  color: #333;
+  font-size: 28rpx;
+  line-height: 1.5;
+}
+
+view, text, input, textarea {
+  box-sizing: border-box;
+}
+
+.card {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin: 20rpx 24rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+}
+
+.row-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: 32rpx;
+  font-weight: 600;
+}
+
+.subtitle {
+  font-size: 30rpx;
+  font-weight: 600;
+  margin-bottom: 8rpx;
+}
+
+.meta {
+  color: #888;
+  font-size: 26rpx;
+  margin-top: 8rpx;
+}
+
+.muted {
+  color: #999;
+  font-size: 26rpx;
+}
+
+.strong {
+  font-weight: 600;
+  color: #1f8f6b;
+}
+
+.tag {
+  display: inline-block;
+  padding: 4rpx 16rpx;
+  border-radius: 8rpx;
+  font-size: 22rpx;
+  line-height: 1.4;
+}
+
+.tag-open {
+  background: #e6f6ef;
+  color: #1f8f6b;
+}
+
+.tag-finished {
+  background: #f0f0f0;
+  color: #999;
+}
+
+.tag-cancelled {
+  background: #fdeaea;
+  color: #d9534f;
+}
+
+.tag-draft {
+  background: #eef1f5;
+  color: #888;
+}
+
+.empty {
+  text-align: center;
+  color: #999;
+  padding: 120rpx 0;
+}
+
+button::after {
+  border: none;
+}
+
+.btn-primary {
+  background: #1f8f6b;
+  color: #fff;
+  border-radius: 14rpx;
+  font-size: 30rpx;
+  margin: 20rpx 24rpx;
+}
+
+.btn-primary[disabled] {
+  background: #b7d8cd;
+  color: #fff;
+}
+
+.btn-ghost {
+  background: #fff;
+  color: #1f8f6b;
+  border: 2rpx solid #1f8f6b;
+  border-radius: 14rpx;
+  font-size: 28rpx;
+  margin: 20rpx 24rpx;
+}
+
+.btn-danger {
+  background: #fff;
+  color: #d9534f;
+  border: 2rpx solid #d9534f;
+  border-radius: 14rpx;
+  font-size: 28rpx;
+}
+
+.btn-ghost.small,
+.btn-primary.small,
+.btn-danger.small {
+  display: inline-block;
+  width: auto;
+  padding: 0 32rpx;
+  height: 64rpx;
+  line-height: 60rpx;
+  font-size: 26rpx;
+  margin: 16rpx 8rpx 0 0;
+}
+
+.form-item {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.form-item .label {
+  width: 180rpx;
+  color: #666;
+  flex-shrink: 0;
+}
+
+.form-item .value {
+  flex: 1;
+}
+
+.picker {
+  color: #333;
+}
+
+.picker.placeholder {
+  color: #bbb;
+}
+
+input, textarea {
+  width: 100%;
+}
+
+.tabs {
+  display: flex;
+  background: #fff;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 24rpx 0;
+  color: #666;
+  font-size: 28rpx;
+}
+
+.tab.active {
+  color: #1f8f6b;
+  font-weight: 600;
+  border-bottom: 4rpx solid #1f8f6b;
+}
+
+.fab {
+  position: fixed;
+  right: 32rpx;
+  bottom: 48rpx;
+  background: #1f8f6b;
+  color: #fff;
+  padding: 20rpx 36rpx;
+  border-radius: 48rpx;
+  box-shadow: 0 6rpx 20rpx rgba(31, 143, 107, 0.4);
+  font-size: 28rpx;
+}
+

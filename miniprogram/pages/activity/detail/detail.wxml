@@ -1,0 +1,118 @@
+<view class="page" wx:if="{{activity}}">
+  <view class="card header">
+    <view class="row-between">
+      <view class="title">{{activity.title}}</view>
+      <view class="tag tag-{{activity.status}}">{{statusLabel}}</view>
+    </view>
+    <view class="meta">{{activity.date}} {{activity.startTime}}-{{activity.endTime}}</view>
+    <view class="meta">{{activity.location}}</view>
+    <view class="meta">场地 {{activity.courts.length}} 个 · 已报名 {{participantCount}} 人</view>
+    <view class="meta" wx:if="{{activity.remark}}">{{activity.remark}}</view>
+  </view>
+
+  <view class="tabs">
+    <view class="tab {{tab === 'signup' ? 'active' : ''}}" data-tab="signup" bindtap="switchTab">报名</view>
+    <view class="tab {{tab === 'court' ? 'active' : ''}}" data-tab="court" bindtap="switchTab">场地与用球</view>
+    <view class="tab {{tab === 'fee' ? 'active' : ''}}" data-tab="fee" bindtap="switchTab">费用</view>
+  </view>
+
+  <!-- 报名接龙 -->
+  <block wx:if="{{tab === 'signup'}}">
+    <view wx:for="{{courtGroups}}" wx:key="court" class="card">
+      <view class="row-between">
+        <view class="subtitle">{{item.court}}</view>
+        <view class="muted">{{item.count}}/{{activity.capacityPerCourt}} 人</view>
+      </view>
+      <view wx:if="{{item.members.length === 0}}" class="muted">暂无报名</view>
+      <view wx:for="{{item.members}}" wx:for-item="m" wx:key="_id" class="member">
+        {{m.nickName || '成员'}}
+      </view>
+      <button
+        wx:if="{{activity.status === 'open' && !mySignup && !item.full}}"
+        class="btn-primary small"
+        data-court="{{item.court}}"
+        bindtap="signup"
+      >报名该场地</button>
+      <view wx:if="{{item.full}}" class="muted">该场地已满</view>
+    </view>
+
+    <button
+      wx:if="{{mySignup && activity.status === 'open'}}"
+      class="btn-ghost"
+      bindtap="cancel"
+    >取消报名（{{mySignup.court}}）</button>
+  </block>
+
+  <!-- 场地与用球 -->
+  <block wx:if="{{tab === 'court'}}">
+    <view class="card summary">
+      <view class="row-between"><view>总用球</view><view class="strong">{{ballTotal}} 颗</view></view>
+      <view class="row-between"><view>本场球数</view><view>{{buckets}} 桶</view></view>
+    </view>
+
+    <view wx:for="{{courtGroups}}" wx:key="court" class="card">
+      <view class="row-between">
+        <view class="subtitle">{{item.court}}</view>
+        <view class="muted">本场用球 {{item.courtBalls}} 颗</view>
+      </view>
+      <view wx:if="{{item.members.length === 0}}" class="muted">暂无报名成员</view>
+      <view wx:for="{{item.members}}" wx:for-item="m" wx:key="_id" class="cell">
+        <view>{{m.nickName || '成员'}}</view>
+        <view class="row">
+          <view class="muted">用球 {{item.ballsByPerson[m._openid] || 0}} 颗</view>
+          <view
+            wx:if="{{isAdmin || m._openid === myOpenid}}"
+            class="plus"
+            data-court="{{item.court}}"
+            data-openid="{{m._openid}}"
+            catchtap="quickBall"
+          >+1</view>
+        </view>
+      </view>
+      <button class="btn-ghost small" data-court="{{item.court}}" bindtap="goBall">＋ 记录用球</button>
+    </view>
+
+    <view class="card">
+      <view class="subtitle">用球明细</view>
+      <view wx:if="{{balls.length === 0}}" class="muted">暂无记录</view>
+      <view wx:for="{{balls}}" wx:key="_id" class="cell">
+        <view>{{item.nickName || '成员'}} · {{item.court}}</view>
+        <view class="row">
+          <view>{{item.count}} 颗</view>
+          <view
+            wx:if="{{isAdmin || item._openid === myOpenid}}"
+            class="del"
+            data-id="{{item._id}}"
+            catchtap="removeBall"
+          >删除</view>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <!-- 费用 -->
+  <block wx:if="{{tab === 'fee'}}">
+    <view class="card summary">
+      <view class="row-between"><view>总费用</view><view class="strong">¥{{expenseTotal}}</view></view>
+      <view class="row-between"><view>参与人数</view><view>{{participantCount}} 人</view></view>
+      <view class="row-between"><view>人均 AA</view><view class="strong">¥{{aaPerPerson}}</view></view>
+    </view>
+
+    <view class="card">
+      <view class="subtitle">费用明细</view>
+      <view wx:if="{{expenses.length === 0}}" class="muted">暂无费用记录</view>
+      <view wx:for="{{expenses}}" wx:key="_id" class="cell">
+        <view>{{item.description || item.type}}</view>
+        <view>¥{{item.amount}}</view>
+      </view>
+    </view>
+
+    <button wx:if="{{isAdmin}}" class="btn-primary" bindtap="goExpense">＋ 添加费用</button>
+  </block>
+
+  <view wx:if="{{isAdmin && activity.status === 'open'}}" class="admin-bar">
+    <button class="btn-ghost small" bindtap="finish">结束活动</button>
+    <button class="btn-danger small" bindtap="remove">取消活动</button>
+  </view>
+</view>
+

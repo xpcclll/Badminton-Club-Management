@@ -1,0 +1,25 @@
+.profile {
+  display: flex;
+  align-items: center;
+}
+
+.avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  background: #1f8f6b;
+  color: #fff;
+  text-align: center;
+  line-height: 120rpx;
+  font-size: 48rpx;
+  margin-right: 24rpx;
+  flex-shrink: 0;
+}
+
+.profile-info {
+  flex: 1;
+}
+
+.profile-info .tag {
+  margin-left: 16rpx;
+}

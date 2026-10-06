@@ -1,0 +1,31 @@
+<view class="page">
+  <view wx:if="{{loading}}" class="empty">加载中...</view>
+  <block wx:else>
+    <view class="card">
+      <view class="subtitle">选择场地</view>
+      <picker range="{{courts}}" value="{{courtIndex}}" bindchange="onCourt">
+        <view class="picker">{{courts[courtIndex]}}</view>
+      </picker>
+    </view>
+
+    <view class="card">
+      <view class="subtitle">选择成员</view>
+      <picker range="{{people}}" range-key="nickName" value="{{personIndex}}" bindchange="onPerson">
+        <view class="picker">{{people[personIndex].nickName || '请选择'}}</view>
+      </picker>
+      <view wx:if="{{people.length === 0}}" class="muted">该场地暂无报名成员</view>
+    </view>
+
+    <view class="card">
+      <view class="subtitle">用球数量</view>
+      <view class="stepper">
+        <view class="step-btn" bindtap="dec">−</view>
+        <view class="step-num">{{count}}</view>
+        <view class="step-btn" bindtap="inc">＋</view>
+      </view>
+    </view>
+
+    <button class="btn-primary" bindtap="submit">确认记录</button>
+  </block>
+</view>
+

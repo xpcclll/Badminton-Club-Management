@@ -1,0 +1,57 @@
+<view class="page">
+  <view class="card summary">
+    <view class="row-between"><view>总费用</view><view class="strong">¥{{total}}</view></view>
+    <view class="row-between"><view>参与人数</view><view>{{participantCount}} 人</view></view>
+    <view class="row-between"><view>人均 AA</view><view class="strong">¥{{aaPerPerson}}</view></view>
+  </view>
+
+  <view class="card">
+    <view class="subtitle">费用明细</view>
+    <view wx:if="{{expenses.length === 0}}" class="muted">暂无费用记录</view>
+    <view wx:for="{{expenses}}" wx:key="_id" class="cell">
+      <view>{{item.description || item.type}}</view>
+      <view class="row">
+        <view>¥{{item.amount}}</view>
+        <view wx:if="{{isAdmin}}" class="del" data-id="{{item._id}}" catchtap="remove">删除</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="card" wx:if="{{isAdmin}}">
+    <view class="subtitle">添加费用</view>
+    <view class="form-item">
+      <view class="label">类型</view>
+      <view class="value">
+        <picker range="{{typeList}}" value="{{typeIndex}}" bindchange="onType">
+          <view class="picker">{{typeList[typeIndex]}}</view>
+        </picker>
+      </view>
+    </view>
+    <view class="form-item" wx:if="{{typeIndex === 0}}">
+      <view class="label">桶数</view>
+      <view class="value"><input type="digit" value="{{quantity}}" data-field="quantity" bindinput="onInput" /></view>
+    </view>
+    <view class="form-item" wx:if="{{typeIndex === 0}}">
+      <view class="label">每桶单价</view>
+      <view class="value"><input type="digit" value="{{unitPrice}}" data-field="unitPrice" bindinput="onInput" /></view>
+    </view>
+    <view class="form-item" wx:if="{{typeIndex === 0}}">
+      <view class="label">小计</view>
+      <view class="value">
+        <view class="row">
+          <input type="digit" placeholder="自动计算或手动填写" value="{{amount}}" data-field="amount" bindinput="onInput" />
+          <view class="calc" bindtap="calcAmount">计算</view>
+        </view>
+      </view>
+    </view>
+    <view class="form-item" wx:if="{{typeIndex !== 0}}">
+      <view class="label">金额</view>
+      <view class="value"><input type="digit" value="{{amount}}" data-field="amount" bindinput="onInput" /></view>
+    </view>
+    <view class="form-item">
+      <view class="label">备注</view>
+      <view class="value"><input placeholder="可选" value="{{description}}" data-field="description" bindinput="onInput" /></view>
+    </view>
+    <button class="btn-primary" disabled="{{submitting}}" bindtap="submit">添加</button>
+  </view>
+</view>

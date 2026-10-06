@@ -1,0 +1,33 @@
+.page {
+  padding-bottom: 40rpx;
+}
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.cell:last-child {
+  border-bottom: none;
+}
+
+.del {
+  color: #d9534f;
+  font-size: 24rpx;
+  margin-left: 20rpx;
+}
+
+.calc {
+  color: #1f8f6b;
+  font-size: 26rpx;
+  padding-left: 24rpx;
+}

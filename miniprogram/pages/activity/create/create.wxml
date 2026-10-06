@@ -1,0 +1,100 @@
+<view class="page">
+  <view class="card">
+    <view class="subtitle">基本信息</view>
+    <view class="form-item">
+      <view class="label">活动标题</view>
+      <view class="value"><input placeholder="例：周三晚球局" value="{{title}}" data-field="title" bindinput="onInput" /></view>
+    </view>
+    <view class="form-item">
+      <view class="label">日期</view>
+      <view class="value">
+        <picker mode="date" value="{{date}}" bindchange="onDate">
+          <view class="picker {{date ? '' : 'placeholder'}}">{{date || '请选择日期'}}</view>
+        </picker>
+      </view>
+    </view>
+    <view class="form-item">
+      <view class="label">开始时间</view>
+      <view class="value">
+        <picker mode="time" value="{{startTime}}" bindchange="onStart">
+          <view class="picker">{{startTime}}</view>
+        </picker>
+      </view>
+    </view>
+    <view class="form-item">
+      <view class="label">结束时间</view>
+      <view class="value">
+        <picker mode="time" value="{{endTime}}" bindchange="onEnd">
+          <view class="picker">{{endTime}}</view>
+        </picker>
+      </view>
+    </view>
+    <view class="form-item">
+      <view class="label">地点</view>
+      <view class="value"><input placeholder="球馆名称/地址" value="{{location}}" data-field="location" bindinput="onInput" /></view>
+    </view>
+    <view class="form-item">
+      <view class="label">报名截止</view>
+      <view class="value">
+        <view class="row">
+          <picker mode="date" value="{{deadlineDate}}" bindchange="onDeadlineDate">
+            <view class="picker {{deadlineDate ? '' : 'placeholder'}}">{{deadlineDate || '日期'}}</view>
+          </picker>
+          <view class="gap"> </view>
+          <picker mode="time" value="{{deadlineTime}}" bindchange="onDeadlineTime">
+            <view class="picker">{{deadlineTime}}</view>
+          </picker>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="subtitle">场地设置</view>
+    <view class="row" wx:for="{{courts}}" wx:key="*this">
+      <view class="court-chip">{{item}}</view>
+      <view class="court-del" data-index="{{index}}" catchtap="removeCourt">删除</view>
+    </view>
+    <view class="form-item">
+      <view class="label">添加场地</view>
+      <view class="value">
+        <view class="row">
+          <input class="court-input" placeholder="如：3号场" value="{{courtInput}}" bindinput="onCourtInput" />
+          <view class="add-btn" bindtap="addCourt">添加</view>
+        </view>
+      </view>
+    </view>
+    <view class="form-item">
+      <view class="label">每场人数</view>
+      <view class="value"><input type="number" value="{{capacityPerCourt}}" data-field="capacityPerCourt" bindinput="onInput" /></view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="subtitle">费用设置</view>
+    <view class="form-item">
+      <view class="label">用球(桶)</view>
+      <view class="value"><input type="digit" value="{{buckets}}" data-field="buckets" bindinput="onInput" /></view>
+    </view>
+    <view class="form-item">
+      <view class="label">每桶单价</view>
+      <view class="value"><input type="digit" value="{{bucketPrice}}" data-field="bucketPrice" bindinput="onInput" /></view>
+    </view>
+    <view class="form-item">
+      <view class="label">每桶球数</view>
+      <view class="value"><input type="number" value="{{ballsPerBucket}}" data-field="ballsPerBucket" bindinput="onInput" /></view>
+    </view>
+    <view class="form-item">
+      <view class="label">场地费</view>
+      <view class="value"><input type="digit" value="{{courtFee}}" data-field="courtFee" bindinput="onInput" /></view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="subtitle">备注</view>
+    <textarea placeholder="补充说明（可选）" value="{{remark}}" data-field="remark" bindinput="onInput"></textarea>
+  </view>
+
+  <button class="btn-primary" disabled="{{submitting}}" bindtap="submit">创建活动</button>
+</view>
+

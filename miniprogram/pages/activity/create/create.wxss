@@ -1,0 +1,31 @@
+.page {
+  padding-bottom: 40rpx;
+}
+
+.gap {
+  width: 24rpx;
+}
+
+.court-chip {
+  background: #e6f6ef;
+  color: #1f8f6b;
+  padding: 10rpx 24rpx;
+  border-radius: 10rpx;
+  margin: 12rpx 0;
+}
+
+.court-del {
+  color: #d9534f;
+  font-size: 24rpx;
+  margin-left: 24rpx;
+}
+
+.court-input {
+  flex: 1;
+}
+
+.add-btn {
+  color: #1f8f6b;
+  font-size: 26rpx;
+  padding-left: 24rpx;
+}

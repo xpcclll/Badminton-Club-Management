@@ -1,0 +1,32 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/stats/stats",
+    "pages/me/me",
+    "pages/activity/create/create",
+    "pages/activity/detail/detail",
+    "pages/activity/ball/ball",
+    "pages/activity/expense/expense"
+  ],
+  "window": {
+    "backgroundColor": "#f5f6f8",
+    "backgroundTextStyle": "dark",
+    "navigationBarBackgroundColor": "#1f8f6b",
+    "navigationBarTitleText": "羽毛球社",
+    "navigationBarTextStyle": "white"
+  },
+  "tabBar": {
+    "color": "#7a7e83",
+    "selectedColor": "#1f8f6b",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      { "pagePath": "pages/index/index", "text": "活动" },
+      { "pagePath": "pages/stats/stats", "text": "统计" },
+      { "pagePath": "pages/me/me", "text": "我的" }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}
+
