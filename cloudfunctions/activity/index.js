@@ -2,6 +2,7 @@ const cloud = require('wx-server-sdk')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
+const _ = db.command
 
 const ok = data => ({ code: 0, data: data })
 const fail = msg => ({ code: 1, msg: msg })
@@ -52,10 +53,13 @@ async function list(event, openid) {
   const res = await db.collection('activities').orderBy('date', 'desc').limit(100).get()
   const out = []
   for (const a of res.data) {
-    const cnt = await db.collection('signups')
+    const active = await db.collection('signups')
       .where({ activityId: a._id, status: 'active' })
       .count()
-    out.push(Object.assign({}, a, { signupCount: cnt.total }))
+    const waiting = await db.collection('signups')
+      .where({ activityId: a._id, status: 'waiting' })
+      .count()
+    out.push(Object.assign({}, a, { signupCount: active.total, waitingCount: waiting.total }))
   }
   return ok(out)
 }
@@ -65,20 +69,24 @@ async function detail(event, openid) {
   const a = await db.collection('activities').doc(activityId).get()
   if (!a.data) throw new Error('活动不存在')
 
-  const [signups, balls, expenses] = await Promise.all([
-    db.collection('signups').where({ activityId: activityId, status: 'active' }).orderBy('createdAt', 'asc').limit(1000).get(),
+  const [signups, balls, expenses, attendance] = await Promise.all([
+    db.collection('signups').where({ activityId: activityId }).orderBy('createdAt', 'asc').limit(1000).get(),
     db.collection('ball_records').where({ activityId: activityId }).orderBy('createdAt', 'asc').limit(1000).get(),
-    db.collection('expenses').where({ activityId: activityId }).limit(1000).get()
+    db.collection('expenses').where({ activityId: activityId }).limit(1000).get(),
+    db.collection('attendance').where({ activityId: activityId }).limit(1000).get()
   ])
 
   const mySignup = signups.data.find(s => s._openid === openid) || null
+  const myAttendance = attendance.data.find(x => x._openid === openid) || null
   const me = await getUser(openid)
   return ok({
     activity: a.data,
     signups: signups.data,
     balls: balls.data,
     expenses: expenses.data,
+    attendance: attendance.data,
     mySignup: mySignup,
+    myAttendance: myAttendance,
     isAdmin: !!(me && me.role === 'admin')
   })
 }
@@ -97,14 +105,14 @@ async function signup(event, openid) {
   }
 
   const exist = await db.collection('signups')
-    .where({ activityId: activityId, _openid: openid, status: 'active' })
+    .where({ activityId: activityId, _openid: openid, status: _.in(['active', 'waiting']) })
     .get()
   if (exist.data.length) throw new Error('你已报名')
 
-  const courtCount = await db.collection('signups')
+  const activeCount = await db.collection('signups')
     .where({ activityId: activityId, court: court, status: 'active' })
     .count()
-  if (courtCount.total >= (Number(a.capacityPerCourt) || 6)) throw new Error('该场地已满')
+  const status = activeCount.total >= (Number(a.capacityPerCourt) || 6) ? 'waiting' : 'active'
 
   const user = await getUser(openid)
   const res = await db.collection('signups').add({
@@ -114,17 +122,75 @@ async function signup(event, openid) {
       _openid: openid,
       nickName: user ? user.nickName : '',
       avatarUrl: user ? user.avatarUrl : '',
-      status: 'active',
+      status: status,
+      createdAt: db.serverDate()
+    }
+  })
+  return ok({ _id: res._id, status: status })
+}
+
+async function cancelSignup(event, openid) {
+  const activityId = event.activityId
+  const my = await db.collection('signups')
+    .where({ activityId: activityId, _openid: openid, status: _.in(['active', 'waiting']) })
+    .get()
+  if (!my.data.length) return ok({ removed: 0, promoted: null })
+
+  const signup = my.data[0]
+  await db.collection('signups').doc(signup._id).remove()
+
+  let promoted = null
+  if (signup.status === 'active') {
+    const next = await db.collection('signups')
+      .where({ activityId: activityId, court: signup.court, status: 'waiting' })
+      .orderBy('createdAt', 'asc')
+      .limit(1)
+      .get()
+    if (next.data.length) {
+      await db.collection('signups').doc(next.data[0]._id).update({ data: { status: 'active' } })
+      promoted = next.data[0]
+    }
+  }
+  return ok({ removed: 1, promoted: promoted })
+}
+
+async function checkin(event, openid) {
+  const activityId = event.activityId
+  const target = event.targetOpenid || openid
+  if (target !== openid) await requireAdmin(openid)
+
+  const a = (await db.collection('activities').doc(activityId).get()).data
+  if (!a) throw new Error('活动不存在')
+
+  const s = await db.collection('signups')
+    .where({ activityId: activityId, _openid: target, status: 'active' })
+    .get()
+  if (!s.data.length) throw new Error('该成员未报名')
+
+  const exist = await db.collection('attendance')
+    .where({ activityId: activityId, _openid: target })
+    .get()
+  if (exist.data.length) return ok({ already: true })
+
+  const user = await getUser(target)
+  const res = await db.collection('attendance').add({
+    data: {
+      activityId: activityId,
+      _openid: target,
+      nickName: user ? user.nickName : '',
+      status: 'present',
       createdAt: db.serverDate()
     }
   })
   return ok({ _id: res._id })
 }
 
-async function cancelSignup(event, openid) {
+async function cancelCheckin(event, openid) {
   const activityId = event.activityId
-  const res = await db.collection('signups')
-    .where({ activityId: activityId, _openid: openid, status: 'active' })
+  const target = event.targetOpenid || openid
+  if (target !== openid) await requireAdmin(openid)
+  const res = await db.collection('attendance')
+    .where({ activityId: activityId, _openid: target })
     .remove()
   return ok({ removed: res.stats.removed })
 }
@@ -158,6 +224,8 @@ exports.main = async (event) => {
       case 'detail': return await detail(event, OPENID)
       case 'signup': return await signup(event, OPENID)
       case 'cancelSignup': return await cancelSignup(event, OPENID)
+      case 'checkin': return await checkin(event, OPENID)
+      case 'cancelCheckin': return await cancelCheckin(event, OPENID)
       case 'update': return await update(event, OPENID)
       case 'finish': return await finish(event, OPENID)
       case 'remove': return await remove(event, OPENID)
@@ -167,4 +235,3 @@ exports.main = async (event) => {
     return fail(e.message || '服务器错误')
   }
 }
-

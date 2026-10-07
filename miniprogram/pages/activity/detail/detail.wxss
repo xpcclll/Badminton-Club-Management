@@ -57,3 +57,43 @@
   margin-top: 24rpx;
 }
 
+.present-tag {
+  display: inline-block;
+  padding: 2rpx 12rpx;
+  border-radius: 8rpx;
+  background: #e6f6ef;
+  color: #1f8f6b;
+  font-size: 22rpx;
+  margin-left: 12rpx;
+}
+
+.checkin-btn {
+  background: #1f8f6b;
+  color: #fff;
+  padding: 8rpx 32rpx;
+  border-radius: 32rpx;
+  font-size: 26rpx;
+}
+
+.mini-btn {
+  width: 48rpx;
+  height: 48rpx;
+  line-height: 48rpx;
+  text-align: center;
+  background: #e6f6ef;
+  color: #1f8f6b;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+  margin-left: 16rpx;
+}
+
+.mini-del {
+  background: #fdeaea;
+  color: #d9534f;
+}
+
+.waiting {
+  color: #b8860b;
+  font-size: 24rpx;
+  margin-top: 8rpx;
+}

@@ -37,7 +37,7 @@ Page({
 
   updatePeople() {
     const court = this.courts[this.data.courtIndex]
-    let people = this.signups.filter(s => s.court === court)
+    let people = this.signups.filter(s => s.court === court && s.status === 'active')
     if (!this.isAdmin) {
       people = people.filter(s => s._openid === app.globalData.openid)
     }

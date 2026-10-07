@@ -23,3 +23,12 @@
 .profile-info .tag {
   margin-left: 16rpx;
 }
+
+.bind-btn {
+  color: #1f8f6b;
+  font-size: 24rpx;
+  padding: 8rpx 20rpx;
+  border: 2rpx solid #1f8f6b;
+  border-radius: 24rpx;
+  flex-shrink: 0;
+}

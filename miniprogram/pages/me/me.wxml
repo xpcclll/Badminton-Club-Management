@@ -8,6 +8,7 @@
       </view>
       <view class="muted">openid: {{openid}}</view>
     </view>
+    <view class="bind-btn" bindtap="bindWechat">绑定微信</view>
   </view>
 
   <view class="card">
@@ -23,9 +24,17 @@
     <button class="btn-primary" disabled="{{saving}}" bindtap="save">保存资料</button>
   </view>
 
+  <view class="card" wx:if="{{!isAdmin}}">
+    <view class="subtitle">管理员登录</view>
+    <view class="form-item">
+      <view class="label">密码</view>
+      <view class="value"><input password placeholder="输入管理员密码" value="{{adminPwd}}" bindinput="onAdminPwd" /></view>
+    </view>
+    <button class="btn-primary" disabled="{{loggingIn}}" bindtap="adminLogin">登录为管理员</button>
+  </view>
+
   <view class="card">
     <view class="subtitle">使用说明</view>
-    <view class="muted">管理员创建活动后，成员在活动详情页选择场地报名接龙；活动结束后按实际报名人数 AA 分摊费用。</view>
+    <view class="muted">管理员创建活动后，成员在活动详情页选择场地报名接龙；满员自动进入候补，有人退出会按顺序补位；活动时签到，结束后按实际到场人数 AA 分摊费用。</view>
   </view>
 </view>
-

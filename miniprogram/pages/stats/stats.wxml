@@ -9,6 +9,7 @@
   <block wx:elif="{{tab === 'me'}}">
     <view class="card">
       <view class="row-between"><view>参加活动</view><view class="strong">{{my.signupCount || 0}} 次</view></view>
+      <view class="row-between"><view>签到次数</view><view class="strong">{{my.attendanceCount || 0}} 次</view></view>
       <view class="row-between"><view>累计用球</view><view class="strong">{{my.totalBalls || 0}} 颗</view></view>
       <view class="row-between"><view>累计分摊</view><view class="strong">¥{{my.totalSpend || '0.00'}}</view></view>
     </view>

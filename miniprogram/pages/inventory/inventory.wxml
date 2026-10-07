@@ -1,0 +1,59 @@
+<view class="page">
+  <view wx:if="{{loading}}" class="empty">加载中...</view>
+
+  <block wx:elif="{{summary}}">
+    <view class="card">
+      <view class="row-between">
+        <view class="subtitle">当前库存</view>
+        <view class="stock-num {{summary.lowStock ? 'low' : ''}}">{{summary.remaining}}</view>
+      </view>
+      <view class="muted">单位：颗（剩余 = 累计入库 − 累计用球）</view>
+      <view wx:if="{{summary.lowStock}}" class="low-tip">库存偏低，请及时补球</view>
+    </view>
+
+    <view class="card summary">
+      <view class="row-between"><view>累计入库</view><view>{{summary.totalIn}} 颗</view></view>
+      <view class="row-between"><view>累计用球</view><view>{{summary.totalOut}} 颗</view></view>
+      <view class="row-between"><view>库存预警线</view><view>{{summary.threshold}} 颗</view></view>
+    </view>
+
+    <view class="card" wx:if="{{isAdmin}}">
+      <view class="subtitle">球入库</view>
+      <view class="form-item">
+        <view class="label">数量（颗）</view>
+        <view class="value"><input type="digit" placeholder="如 36" value="{{quantity}}" data-field="quantity" bindinput="onInput" /></view>
+      </view>
+      <view class="form-item">
+        <view class="label">桶数</view>
+        <view class="value"><input type="digit" placeholder="选填" value="{{buckets}}" data-field="buckets" bindinput="onInput" /></view>
+      </view>
+      <view class="form-item">
+        <view class="label">每桶单价</view>
+        <view class="value"><input type="digit" placeholder="选填" value="{{unitPrice}}" data-field="unitPrice" bindinput="onInput" /></view>
+      </view>
+      <view class="form-item">
+        <view class="label">备注</view>
+        <view class="value"><input placeholder="选填" value="{{note}}" data-field="note" bindinput="onInput" /></view>
+      </view>
+      <button class="btn-primary" disabled="{{submitting}}" bindtap="submit">确认入库</button>
+    </view>
+
+    <view class="card">
+      <view class="subtitle">最近入库</view>
+      <view wx:if="{{!summary.recentIn || summary.recentIn.length === 0}}" class="muted">暂无记录</view>
+      <view wx:for="{{summary.recentIn}}" wx:key="_id" class="cell">
+        <view>入库 {{item.quantity}} 颗{{item.note ? '（' + item.note + '）' : ''}}</view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="subtitle">最近用球</view>
+      <view wx:if="{{!summary.recentOut || summary.recentOut.length === 0}}" class="muted">暂无记录</view>
+      <view wx:for="{{summary.recentOut}}" wx:key="_id" class="cell">
+        <view>{{item.nickName || '成员'}} · {{item.court}}</view>
+        <view>{{item.count}} 颗</view>
+      </view>
+    </view>
+  </block>
+</view>
+

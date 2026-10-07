@@ -18,9 +18,10 @@ async function requireAdmin(openid) {
 }
 
 async function myStats(openid) {
-  const [signups, balls] = await Promise.all([
+  const [signups, balls, attendance] = await Promise.all([
     db.collection('signups').where({ _openid: openid, status: 'active' }).orderBy('createdAt', 'desc').limit(1000).get(),
-    db.collection('ball_records').where({ _openid: openid }).limit(1000).get()
+    db.collection('ball_records').where({ _openid: openid }).limit(1000).get(),
+    db.collection('attendance').where({ _openid: openid }).limit(1000).get()
   ])
 
   const totalBalls = balls.data.reduce((s, b) => s + (Number(b.count) || 0), 0)
@@ -30,12 +31,14 @@ async function myStats(openid) {
   for (const s of signups.data) {
     const a = await db.collection('activities').doc(s.activityId).get().catch(() => null)
     if (!a || !a.data) continue
-    const [exp, parts] = await Promise.all([
+    const [exp, parts, att] = await Promise.all([
       db.collection('expenses').where({ activityId: a._id }).limit(1000).get(),
-      db.collection('signups').where({ activityId: a._id, status: 'active' }).count()
+      db.collection('signups').where({ activityId: a._id, status: 'active' }).count(),
+      db.collection('attendance').where({ activityId: a._id }).count()
     ])
     const totalExp = exp.data.reduce((x, e) => x + (Number(e.amount) || 0), 0)
-    const share = parts.total ? totalExp / parts.total : 0
+    const denominator = att.total || parts.total
+    const share = denominator ? totalExp / denominator : 0
     totalSpend += share
     activities.push({
       key: a._id,
@@ -46,6 +49,7 @@ async function myStats(openid) {
 
   return ok({
     signupCount: signups.data.length,
+    attendanceCount: attendance.data.length,
     totalBalls: totalBalls,
     totalSpend: Math.round(totalSpend * 100) / 100,
     activities: activities
@@ -54,12 +58,13 @@ async function myStats(openid) {
 
 async function overall(openid) {
   await requireAdmin(openid)
-  const [users, signups, balls, expenses, activities] = await Promise.all([
+  const [users, signups, balls, expenses, activities, attendance] = await Promise.all([
     db.collection('users').limit(1000).get(),
     db.collection('signups').where({ status: 'active' }).limit(1000).get(),
     db.collection('ball_records').limit(1000).get(),
     db.collection('expenses').limit(1000).get(),
-    db.collection('activities').limit(1000).get()
+    db.collection('activities').limit(1000).get(),
+    db.collection('attendance').limit(1000).get()
   ])
 
   const expByAct = {}
@@ -69,6 +74,10 @@ async function overall(openid) {
   const partByAct = {}
   signups.data.forEach(s => {
     partByAct[s.activityId] = (partByAct[s.activityId] || 0) + 1
+  })
+  const attByAct = {}
+  attendance.data.forEach(a => {
+    attByAct[a.activityId] = (attByAct[a.activityId] || 0) + 1
   })
 
   const rowByUser = {}
@@ -99,7 +108,7 @@ async function overall(openid) {
       r.activities += 1
     }
     const totalExp = expByAct[s.activityId] || 0
-    const parts = partByAct[s.activityId] || 1
+    const parts = attByAct[s.activityId] || partByAct[s.activityId] || 1
     r.spend += totalExp / parts
   })
 

@@ -8,7 +8,9 @@ Page({
     openid: '',
     nickName: '',
     phone: '',
-    saving: false
+    adminPwd: '',
+    saving: false,
+    loggingIn: false
   },
 
   onShow() {
@@ -33,6 +35,42 @@ Page({
     this.setData({ phone: e.detail.value })
   },
 
+  onAdminPwd(e) {
+    this.setData({ adminPwd: e.detail.value })
+  },
+
+  adminLogin() {
+    if (!this.data.adminPwd) {
+      wx.showToast({ title: '请输入管理员密码', icon: 'none' })
+      return
+    }
+    this.setData({ loggingIn: true })
+    api.adminLogin(this.data.adminPwd)
+      .then(() => {
+        wx.showToast({ title: '已登录为管理员', icon: 'success' })
+        this.setData({ adminPwd: '' })
+        app.refreshUser().then(() => this.onShow())
+      })
+      .catch(() => {})
+      .then(() => this.setData({ loggingIn: false }))
+  },
+
+  bindWechat() {
+    wx.getUserProfile({
+      desc: '用于展示头像和昵称',
+      success: res => {
+        const info = res.userInfo || {}
+        api.updateProfile({ nickName: info.nickName, avatarUrl: info.avatarUrl })
+          .then(() => {
+            wx.showToast({ title: '已绑定', icon: 'success' })
+            app.refreshUser()
+          })
+          .catch(() => {})
+      },
+      fail: () => wx.showToast({ title: '已取消授权', icon: 'none' })
+    })
+  },
+
   save() {
     this.setData({ saving: true })
     api.updateProfile({ nickName: this.data.nickName, phone: this.data.phone })
@@ -44,4 +82,3 @@ Page({
       .then(() => this.setData({ saving: false }))
   }
 })
-

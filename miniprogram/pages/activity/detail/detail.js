@@ -1,6 +1,7 @@
 const app = getApp()
 const api = require('../../../utils/api')
 const fmt = require('../../../utils/format')
+const bill = require('../../../utils/bill')
 
 Page({
   data: {
@@ -8,13 +9,18 @@ Page({
     signups: [],
     balls: [],
     expenses: [],
+    attendance: [],
     isAdmin: false,
     myOpenid: '',
     mySignup: null,
+    myAttendance: null,
     tab: 'signup',
     courtGroups: [],
+    presentMap: {},
+    activeCount: 0,
+    waitingCount: 0,
+    attendeeCount: 0,
     expenseTotal: '0.00',
-    participantCount: 0,
     aaPerPerson: '0.00',
     ballTotal: 0,
     buckets: 0,
@@ -41,9 +47,16 @@ Page({
     const signups = data.signups || []
     const balls = data.balls || []
     const expenses = data.expenses || []
+    const attendance = data.attendance || []
+
+    const activeSignups = signups.filter(s => s.status === 'active')
+    const waitingSignups = signups.filter(s => s.status === 'waiting')
+    const presentMap = {}
+    attendance.forEach(x => { presentMap[x._openid] = 1 })
 
     const courtGroups = courts.map(c => {
-      const members = signups.filter(s => s.court === c)
+      const members = activeSignups.filter(s => s.court === c)
+      const waiting = waitingSignups.filter(s => s.court === c)
       const ballsByPerson = {}
       let courtBalls = 0
       balls.filter(b => b.court === c).forEach(b => {
@@ -54,16 +67,19 @@ Page({
       return {
         court: c,
         members: members,
+        waiting: waiting,
         ballsByPerson: ballsByPerson,
         courtBalls: courtBalls,
         count: members.length,
+        waitingCount: waiting.length,
         full: members.length >= (Number(a.capacityPerCourt) || 6)
       }
     })
 
     const expenseRaw = expenses.reduce((s, e) => s + (Number(e.amount) || 0), 0)
-    const participantCount = signups.length
-    const aa = participantCount ? expenseRaw / participantCount : 0
+    const activeCount = activeSignups.length
+    const attendeeCount = attendance.length || activeCount
+    const aa = attendeeCount ? expenseRaw / attendeeCount : 0
     const ballTotal = balls.reduce((s, b) => s + (Number(b.count) || 0), 0)
 
     this.setData({
@@ -71,12 +87,17 @@ Page({
       signups: signups,
       balls: balls,
       expenses: expenses,
+      attendance: attendance,
       isAdmin: data.isAdmin,
       myOpenid: app.globalData.openid,
       mySignup: data.mySignup,
+      myAttendance: data.myAttendance,
       courtGroups: courtGroups,
+      presentMap: presentMap,
+      activeCount: activeCount,
+      waitingCount: waitingSignups.length,
+      attendeeCount: attendeeCount,
       expenseTotal: fmt.money(expenseRaw),
-      participantCount: participantCount,
       aaPerPerson: fmt.money(aa),
       ballTotal: ballTotal,
       buckets: Number(a.buckets) || 0,
@@ -91,8 +112,8 @@ Page({
   signup(e) {
     const court = e.currentTarget.dataset.court
     api.signup(this.activityId, court)
-      .then(() => {
-        wx.showToast({ title: '报名成功', icon: 'success' })
+      .then(res => {
+        wx.showToast({ title: res.status === 'waiting' ? '已加入候补' : '报名成功', icon: 'success' })
         this.load()
       })
       .catch(() => {})
@@ -112,6 +133,45 @@ Page({
             .catch(() => {})
         }
       }
+    })
+  },
+
+  checkinSelf() {
+    api.checkin(this.activityId)
+      .then(() => {
+        wx.showToast({ title: '签到成功', icon: 'success' })
+        this.load()
+      })
+      .catch(() => {})
+  },
+
+  cancelCheckinSelf() {
+    api.cancelCheckin(this.activityId)
+      .then(() => {
+        wx.showToast({ title: '已取消签到', icon: 'none' })
+        this.load()
+      })
+      .catch(() => {})
+  },
+
+  adminCheckin(e) {
+    api.checkin(this.activityId, e.currentTarget.dataset.openid)
+      .then(() => this.load())
+      .catch(() => {})
+  },
+
+  adminCancelCheckin(e) {
+    api.cancelCheckin(this.activityId, e.currentTarget.dataset.openid)
+      .then(() => this.load())
+      .catch(() => {})
+  },
+
+  exportBill() {
+    const activeSignups = this.data.signups.filter(s => s.status === 'active')
+    const text = bill.buildBill(this.data.activity, activeSignups, this.data.attendance, this.data.expenses, this.data.balls)
+    wx.setClipboardData({
+      data: text,
+      success: () => wx.showToast({ title: '账单已复制', icon: 'none' })
     })
   },
 
@@ -173,4 +233,3 @@ Page({
     })
   }
 })
-

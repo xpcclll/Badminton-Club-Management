@@ -16,7 +16,8 @@ Page({
     expenses: [],
     total: '0.00',
     aaPerPerson: '0.00',
-    participantCount: 0,
+    activeCount: 0,
+    attendeeCount: 0,
     isAdmin: false,
     typeList: ['羽毛球', '场地费', '其他'],
     typeIndex: 0,
@@ -40,13 +41,16 @@ Page({
       .then(data => {
         const expenses = data.expenses || []
         const raw = expenses.reduce((s, e) => s + (Number(e.amount) || 0), 0)
-        const n = (data.signups || []).length
+        const active = (data.signups || []).filter(s => s.status === 'active')
+        const attendance = data.attendance || []
+        const n = attendance.length || active.length
         const aa = n ? raw / n : 0
         this.setData({
           expenses: expenses,
           total: fmt.money(raw),
           aaPerPerson: fmt.money(aa),
-          participantCount: n,
+          activeCount: active.length,
+          attendeeCount: n,
           isAdmin: data.isAdmin
         })
       })

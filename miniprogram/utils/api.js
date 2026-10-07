@@ -22,6 +22,7 @@ module.exports = {
   }),
 
   updateProfile: data => call('login', 'update', data),
+  adminLogin: password => call('login', 'adminLogin', { password: password }),
 
   listActivities: () => call('activity', 'list'),
   getActivity: activityId => call('activity', 'detail', { activityId: activityId }),
@@ -31,6 +32,8 @@ module.exports = {
   removeActivity: activityId => call('activity', 'remove', { activityId: activityId }),
   signup: (activityId, court) => call('activity', 'signup', { activityId: activityId, court: court }),
   cancelSignup: activityId => call('activity', 'cancelSignup', { activityId: activityId }),
+  checkin: (activityId, targetOpenid) => call('activity', 'checkin', { activityId: activityId, targetOpenid: targetOpenid }),
+  cancelCheckin: (activityId, targetOpenid) => call('activity', 'cancelCheckin', { activityId: activityId, targetOpenid: targetOpenid }),
 
   addBall: data => call('record', 'addBall', data),
   removeBall: id => call('record', 'removeBall', { id: id }),
@@ -38,5 +41,7 @@ module.exports = {
   removeExpense: id => call('record', 'removeExpense', { id: id }),
 
   myStats: () => call('stats', 'myStats'),
-  overallStats: () => call('stats', 'overall')
+  overallStats: () => call('stats', 'overall'),
+  inventorySummary: () => call('inventory', 'summary'),
+  stockIn: data => call('inventory', 'stockIn', data)
 }

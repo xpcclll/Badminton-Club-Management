@@ -6,7 +6,7 @@
     </view>
     <view class="meta">{{activity.date}} {{activity.startTime}}-{{activity.endTime}}</view>
     <view class="meta">{{activity.location}}</view>
-    <view class="meta">场地 {{activity.courts.length}} 个 · 已报名 {{participantCount}} 人</view>
+    <view class="meta">场地 {{activity.courts.length}} 个 · 报名 {{activeCount}} · 候补 {{waitingCount}} · 已签到 {{attendance.length}}</view>
     <view class="meta" wx:if="{{activity.remark}}">{{activity.remark}}</view>
   </view>
 
@@ -16,31 +16,60 @@
     <view class="tab {{tab === 'fee' ? 'active' : ''}}" data-tab="fee" bindtap="switchTab">费用</view>
   </view>
 
-  <!-- 报名接龙 -->
+  <!-- 报名接龙 + 签到 -->
   <block wx:if="{{tab === 'signup'}}">
+    <view class="card summary">
+      <view class="row-between"><view>已报名</view><view>{{activeCount}} 人</view></view>
+      <view class="row-between"><view>候补</view><view>{{waitingCount}} 人</view></view>
+      <view class="row-between"><view>已签到</view><view>{{attendance.length}} 人</view></view>
+    </view>
+
+    <view wx:if="{{mySignup && mySignup.status === 'active'}}" class="card">
+      <view class="row-between">
+        <view class="subtitle">我的签到</view>
+        <view wx:if="{{!myAttendance}}" class="checkin-btn" bindtap="checkinSelf">签到</view>
+        <view wx:else class="present-tag">已签到</view>
+      </view>
+      <button wx:if="{{myAttendance}}" class="btn-ghost small" bindtap="cancelCheckinSelf">取消签到</button>
+    </view>
+
     <view wx:for="{{courtGroups}}" wx:key="court" class="card">
       <view class="row-between">
         <view class="subtitle">{{item.court}}</view>
         <view class="muted">{{item.count}}/{{activity.capacityPerCourt}} 人</view>
       </view>
+
       <view wx:if="{{item.members.length === 0}}" class="muted">暂无报名</view>
       <view wx:for="{{item.members}}" wx:for-item="m" wx:key="_id" class="member">
-        {{m.nickName || '成员'}}
+        <view class="row-between">
+          <view class="row">
+            <view>{{m.nickName || '成员'}}</view>
+            <view wx:if="{{presentMap[m._openid]}}" class="present-tag">已到</view>
+          </view>
+          <view wx:if="{{isAdmin}}" class="row">
+            <view wx:if="{{!presentMap[m._openid]}}" class="mini-btn" data-openid="{{m._openid}}" catchtap="adminCheckin">签</view>
+            <view wx:else class="mini-btn mini-del" data-openid="{{m._openid}}" catchtap="adminCancelCheckin">退</view>
+          </view>
+        </view>
       </view>
+
+      <view wx:if="{{item.waiting.length > 0}}" class="waiting">
+        候补：<text wx:for="{{item.waiting}}" wx:for-item="w" wx:key="_id">{{w.nickName || '成员'}}{{index === item.waiting.length - 1 ? '' : '、'}}</text>
+      </view>
+
       <button
-        wx:if="{{activity.status === 'open' && !mySignup && !item.full}}"
+        wx:if="{{activity.status === 'open' && !mySignup}}"
         class="btn-primary small"
         data-court="{{item.court}}"
         bindtap="signup"
-      >报名该场地</button>
-      <view wx:if="{{item.full}}" class="muted">该场地已满</view>
+      >{{item.full ? '加入候补' : '报名该场地'}}</button>
     </view>
 
     <button
       wx:if="{{mySignup && activity.status === 'open'}}"
       class="btn-ghost"
       bindtap="cancel"
-    >取消报名（{{mySignup.court}}）</button>
+    >取消报名（{{mySignup.court}}{{mySignup.status === 'waiting' ? ' · 候补' : ''}}）</button>
   </block>
 
   <!-- 场地与用球 -->
@@ -94,7 +123,7 @@
   <block wx:if="{{tab === 'fee'}}">
     <view class="card summary">
       <view class="row-between"><view>总费用</view><view class="strong">¥{{expenseTotal}}</view></view>
-      <view class="row-between"><view>参与人数</view><view>{{participantCount}} 人</view></view>
+      <view class="row-between"><view>到场 / 报名</view><view>{{attendeeCount}} / {{activeCount}} 人</view></view>
       <view class="row-between"><view>人均 AA</view><view class="strong">¥{{aaPerPerson}}</view></view>
     </view>
 
@@ -107,6 +136,7 @@
       </view>
     </view>
 
+    <button class="btn-ghost" bindtap="exportBill">复制账单到剪贴板</button>
     <button wx:if="{{isAdmin}}" class="btn-primary" bindtap="goExpense">＋ 添加费用</button>
   </block>
 
@@ -115,4 +145,3 @@
     <button class="btn-danger small" bindtap="remove">取消活动</button>
   </view>
 </view>
-
